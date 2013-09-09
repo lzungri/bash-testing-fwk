@@ -1,0 +1,49 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	lib_tests
+#FUNCION:	Funciones que utilizan los tests.
+#------------------------------------------------------------------------------
+
+#FUNCIONES
+print_error() {
+	msg=$1
+	printf "\n[\e[01;31mError\e[0m]: $msg"
+	exit 1
+}
+
+#Escribe en el log el texto enviado como argumento.
+loguear() {
+	cadena=$1
+	printf "$1" >> $TEST_LOG
+}
+
+#Sonido indicador de resultado de test.
+sonidillo() {
+	pausas=$@
+	for pausa in $pausas; do
+		printf "\a"; #Alerta
+		usleep $pausa;
+	done
+}
+
+#Indica la cantidad de unidades separadas por '\n'.
+contar_entradas() {
+	local entrada=$1|tr -d " " 
+	local contador=0
+
+	for unidad in $entrada; do
+		((contador=$contador+1));
+	done
+	return $contador
+}
+
+#Extiende a otro test preexistente.
+extends() {
+	local test_ext=$1
+	
+	./$test_ext nombre;
+	[[ "$?" -ne 0 ]] && print_error "Test <$test> no valido.\n"
+	./$test_ext ejecutar;
+}
+
+#-----------------------------------<< F I N >>--------------------------------

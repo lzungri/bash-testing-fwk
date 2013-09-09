@@ -1,0 +1,75 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_sched.
+#FUNCION:	Chequea el correcto funcionamiento de los algoritmos de scheduling.
+#------------------------------------------------------------------------------
+. libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Control de funcionamiento de algoritmos de planificacion."
+PREFIJO_FILE="test_"	#Prefijo con el que se graba cada fichero de prueba.
+DELAY_CHEQUEO=50000		#Retrazo para la lectura de los archivos.
+TEST_NEXT=/tmp/test_next
+
+PROC_NAME[0]="Corredor"
+PROC_NAME[1]="Empresa"
+#Cadena que se usa para buscar el tipo de mensaje operacion pendiente en el header. Si no aparece nada cuando se controla la planificacion se debe mirar con strace en el corredor como es enviado este header. Si se envia en un solo bloque se deberia mandar como aparece en CLAVE_BUSQUEDA por defecto.
+CLAVE_BUSQUEDA[0]="\0\6\0\0\0\35"
+CLAVE_BUSQUEDA[1]="Empresa"
+num_planificaciones=0
+
+case $1 in
+	nombre)
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		for(( i=0; $i<=$num_planificaciones; ++i)); do
+			read -p "     Procesos ${PROC_NAME[$i]} a analizar [PID1 PID2 PIDn]:  " pids
+			loguear "Procesos a analizar [$pids]\n"
+			read -p "     Prefijo para visualizar cada ${PROC_NAME[$i]}: " prefijo
+			loguear "Prefijo de cada proceso: $prefijo\n"
+			echo "     Crear fichero $TEST_NEXT para continuar con el siguiente test."
+			
+			#Ejecuta en segundo plano el proceso que imprime datos de los procesos a analizar su planificacion.
+			for proceso in $pids; do
+				strace -p$proceso -o/tmp/$PREFIJO_FILE$proceso -s255 &
+			done
+
+			loguear "Planificacion [${PROC_NAME[$i]}]:\n"
+			echo Secuencia:
+			#Se analiza cada archivo para ver cual tiene una modificacion.
+			while [[ ! -e $TEST_NEXT ]]; do
+				usleep $DELAY_CHEQUEO;
+				for pid in $pids; do
+					#Si cambio desde su ultimo acceso.
+					if [[ -N /tmp/$PREFIJO_FILE$pid ]]; then
+						#Busca la cadena clave en el fichero.
+						grep -q -F ${CLAVE_BUSQUEDA[$i]} /tmp/$PREFIJO_FILE$pid
+						#Si la encuentra es porque se DESPACHO el proceso.
+						[[ $? -eq 0 ]] && printf " -\e[01;37m$prefijo($pid)\e[0m" && loguear " -$prefijo($pid)" && echo > /tmp/$PREFIJO_FILE$pid
+						#Se vacia para reconocer el proximo cambio.
+					fi
+				done
+			done
+			echo
+
+			#Se borran los ficheros temporales.
+			rm -f $TEST_NEXT
+			for pid in $pids; do
+				rm -f /tmp/$PREFIJO_FILE$pid
+			done
+		done
+		
+		loguear "\nFin control Planificacion\n"
+		
+		read -p "     Es correcto el funcionamiento? [s/n]" -n 1 resultado
+		echo
+
+		[[ "$resultado" == "s" ]] && exit 1;
+		exit 0;
+		;;
+	*)
+		exit 127;
+esac

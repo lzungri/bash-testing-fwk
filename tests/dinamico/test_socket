@@ -1,0 +1,40 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_socket.
+#FUNCION:	Analiza la cantidad de conexiones de los procesos.
+#------------------------------------------------------------------------------
+. libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Analisis de las conexiones por proceso."
+
+case $1 in
+	nombre)
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		read -p "     Maximos sockets permitidos por proceso[n]: " max_socket
+		#Se podria hacer mas facil si se lee /proc/loadavg.
+		loguear "Socket abiertos limite: $max_socket\n"
+		read -p "     Procesos a controlar [PID1 PID2 PIDn]: " pids
+		loguear "Procesos a controlar: [$pids]\n"
+
+		for proceso_id in $pids; do
+			count=0;
+			#En /proc/[PID]/fd se tienen los descriptores abiertos por un proceso.
+			for fd in $(ls /proc/$proceso_id/fd); do
+				#-S Es un Socket?.
+				[[ -S /proc/$proceso_id/fd/$fd ]] && ((count=$count+1));
+			done
+
+			loguear "   * PID[$proceso_id] -> $count conexiones.\n"
+			[[ $count -gt $max_socket ]] && exit 0;
+		done
+		
+		exit 1;
+		;;
+	*)
+		exit 127;
+esac

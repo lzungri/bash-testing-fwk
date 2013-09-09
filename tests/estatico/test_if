@@ -1,0 +1,29 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_if.
+#FUNCION:	Cuenta la cantidad de ifs en el codigo. Solo para exigentes!.
+#------------------------------------------------------------------------------
+. libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Cuenta de la cantidad de ifs en el codigo."
+
+contador=0
+
+case $1 in
+	nombre)
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		read -p "     Maximo permitido de 'if': " max_if
+		loguear "Cantidad de ifs limite: $max_if\n"
+		contador=$(grep "if" $TEST_SOURCE_DIR/* | wc -l | tr -d " ")
+		loguear "Cantidad de ifs encontrados: $contador\n"
+		[[ $contador -le $max_if ]] && exit 1;
+		exit 0;
+		;;
+	*)
+		exit 127;
+esac

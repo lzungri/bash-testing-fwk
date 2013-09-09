@@ -1,0 +1,28 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_ping.
+#FUNCION:	Test para comprobar las conexiones de los procesos.
+#------------------------------------------------------------------------------
+. ../libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Test de conexiones de procesos."
+
+#VARIABLES DE ENTORNO.
+
+#FUNCIONES.
+
+#TEST.
+case $1 in
+	nombre)
+		#El test debe imprimir en pantalla su nombre.
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		exit 1;
+		;;
+	*)
+		exit 127; #Comando no reconocido.
+esac

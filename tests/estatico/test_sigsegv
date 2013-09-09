@@ -1,0 +1,25 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_sigsegv.
+#FUNCION:	Analiza la existencia de la captura de la signal SIGSEV.
+#------------------------------------------------------------------------------
+. libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Chequeo de captura de la signal SIGSEGV."
+
+case $1 in
+	nombre)
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		grep --line-number SIGSEGV $TEST_SOURCE_DIR/* >> $TEST_LOG
+		#Si encuentra patron devuelve 0 sino 1 (2 si error).
+		[[ "$?" -eq 0 || "$?" -eq 2 ]] && exit 0; #FAIL.
+		exit 1; #OK.
+		;;
+	*)
+		exit 127;
+esac

@@ -1,0 +1,39 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_generico.
+#FUNCION:	Estructura de un test normalizado.
+#------------------------------------------------------------------------------
+. ../libs/lib_tests
+
+#ACLARACIONES.
+#	* Una vez desarrollado el test, debe registrarselo en 'config/test.config'.
+#	* En la variable de entorno <TEST_LOG> se tiene el fichero donde se deben registrar las operaciones realizadas por el test.
+#	* En la variable <TEST_SOURCE_DIR> esta el directorio del source del grupo.
+
+#CONSTANTES.
+TEST_NOMBRE=""
+
+#VARIABLES DE ENTORNO.
+
+#FUNCIONES.
+
+#TEST.
+# El test principal llama al test con los posibles siguientes parametros:
+case $1 in
+	nombre)
+		#El test debe imprimir en pantalla su nombre.
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		#Ejecucion del test.
+		#Aclaracion: Debe finalizar con un valor de retorno de:
+			# 0: Existe condicion que no es satisfecha.
+			# 1: El test es aprobado.
+		#Un test puede extender a otro, para ello 'extends <test_a_extender>'.
+		exit 1;
+		;;
+	*)
+		exit 127; #Comando no reconocido.
+esac

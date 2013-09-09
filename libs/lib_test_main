@@ -1,0 +1,50 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	lib_test_main
+#FUNCION:	Funciones que utiliza el test main.
+#------------------------------------------------------------------------------
+
+#FUNCIONES
+#Imprime en pantalla el resultado del test.
+print_resultado() {
+	resultado=$1	#Se le pasa el resultado.
+	printf "\e[0m\e[70C[ "
+	case $resultado in
+		0)	#FAIL
+			printf "\e[01;31mFAIL"
+			sonidillo 100000 100000 100000
+			echo "F A I L" >> $TEST_LOG
+			;;
+		1)	#OK
+			printf "\e[01;32m OK "
+			sonidillo 200000 200000
+			echo "O K" >> $TEST_LOG
+			;;
+		*) #Desconocido
+			printf "\e[05m ?? "
+			sonidillo 80000 80000 80000 80000
+			;;
+	esac
+	printf "\e[0m ]\n"
+}
+
+print_bienvenida() {
+	version=$1
+	printf "\t\t\t\e[01;37mTest-Sistemas operativos [v$version]\e[0m\n\n"
+}
+
+print_eficacia() {
+	printf "\e[70C\e[01;37m[  $2-$1 ]\e[0m\n"
+}
+
+#Configura las variables que se les pasa a cada test.
+#Se configura desde el test main y como llama a cada test => lo heredan.
+set_up() {
+	printf "\e[01;37m"
+	read -p "Nombre de grupo: " -n15 TEST_LOG
+	TEST_LOG=$TEST_RESULTADOS/test_$TEST_LOG 
+	read -p "Directorio del codigo: " TEST_SOURCE_DIR
+	printf "\e[0m"
+}
+
+#-----------------------------------<< F I N >>--------------------------------

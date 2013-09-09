@@ -1,0 +1,65 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test
+#FUNCION:	Script principal para la ejecucion de los tests.
+#------------------------------------------------------------------------------
+
+#INCLUDES
+. libs/lib_test_main
+. libs/lib_tests
+
+#CONSTANTES.
+VERSION="0.1"
+FILE_CONFIG="config/test.config"
+
+#VARIABLES.
+col_tests=""			#Formato col_tests: "test1 test2 testFinal"
+num_tests=0				#Cantidad de tests a ejecutar.
+num_tests_ok=0			#Cantidad de Tests superados.
+test_res=0				#Resultado de un test.
+
+#VARIABLES DE ENTORNO.
+export TEST_DIR="tests"	#Carpeta que contiene los tests.
+export TEST_RESULTADOS="resultados"	#Carpeta que contiene los resultados.
+export TEST_LOG			#Fichero de log de los tests.
+export TEST_SOURCE_DIR	#Ruta del codigo fuente del grupo.
+
+
+print_bienvenida $VERSION
+#Se configuran las variables de entorno.
+set_up
+
+#Si no existen argumentos se cargan los tests del <file_config>.
+if [ "$#" = 0 ]; then
+	for test in $(cat $FILE_CONFIG); do
+		col_tests="$col_tests $test";
+		((num_tests=$num_tests+1));
+	done
+else 	#Existen test pasados como argumento.
+	col_tests="$@";
+	num_tests=$#;
+fi
+
+#Se crea el <TEST_LOG> del grupo.
+echo "Registros del test:" > $TEST_LOG
+
+printf "Test:\n\n"
+#Se ejecutan los tests.
+for test in $col_tests; do
+	echo "-----" >> $TEST_LOG
+	$TEST_DIR/$test nombre;
+	[[ "$?" -ne 0 ]] && print_error "Test <$test> no valido.\n"
+	$TEST_DIR/$test ejecutar;
+	#<$?> Devuelve el estado del ultimo comando ejecutado.
+	test_res=$?;
+	print_resultado $test_res;
+	[[ $test_res -eq 1 ]] && ((num_tests_ok=$num_tests_ok+1));
+done
+echo -e "-----\n" >> $TEST_LOG
+
+print_eficacia $num_tests $num_tests_ok
+loguear "Eficacia: $num_tests_ok tests OK de $num_tests.\n\t\t\t\t\t\t\t\t\t[[ F I N ]]\n"
+
+echo "Se genero log de resultados: [$TEST_LOG]"
+
+#-----------------------------------<< F I N >>--------------------------------

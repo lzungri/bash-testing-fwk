@@ -1,0 +1,44 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+#FICHERO:	test_load.
+#FUNCION:	Analiza la carga del sistema segun un valor de referencia.
+#------------------------------------------------------------------------------
+. libs/lib_tests
+
+#CONSTANTES.
+TEST_NOMBRE="Analisis de la carga del sistema."
+
+carga=0
+unset b_carga
+
+case $1 in
+	nombre)
+		echo $TEST_NOMBRE
+		loguear "$TEST_NOMBRE\n"
+		;;
+
+	ejecutar)
+		read -p "     Maxima carga permitida [n.nn]: " max_load
+		loguear "Carga limite: $max_load\n"
+
+		#Se altera IFS que indica el separador, se agrega la coma.
+		IFS=$' \t\n,'
+		
+		for word in $(uptime); do
+			if [[ -n $b_carga ]]; then
+				carga=$word
+				break;
+			elif [[ $word == "average:" ]]; then
+				export b_carga=1;
+		fi
+		done
+
+		#Se podria hacer mas facil si se lee /proc/loadavg.
+		
+		loguear "Carga calculada: $carga\n"
+		[[ $carga < $max_load ]] && exit 1;
+		exit 0;
+		;;
+	*)
+		exit 127;
+esac
